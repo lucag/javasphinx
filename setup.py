@@ -19,7 +19,7 @@ from setuptools import setup
 setup(
     name = "javasphinx",
     packages = ["javasphinx"],
-    version = "0.9.15",
+    version = "0.9.16",
     author = "Chris Thunes",
     author_email = "cthunes@brewtab.com",
     url = "http://github.com/bronto/javasphinx",
@@ -39,7 +39,8 @@ setup(
         "beautifulsoup4",
         "future",
         "docutils",
-        "sphinx"
+        "sphinx",
+        "six"
     ],
     entry_points={
         'console_scripts': [

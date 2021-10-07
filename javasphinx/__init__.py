@@ -17,6 +17,7 @@
 from .domain import JavaDomain
 from .extdoc import javadoc_role
 
+
 def setup(app):
     app.add_domain(JavaDomain)
 

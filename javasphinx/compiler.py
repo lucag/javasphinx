@@ -17,8 +17,9 @@
 import javalang
 
 import javasphinx.formatter as formatter
-import javasphinx.util as util
 import javasphinx.htmlrst as htmlrst
+import javasphinx.util as util
+
 
 class JavadocRestCompiler(object):
     """ Javadoc to ReST compiler. Builds ReST documentation from a Java syntax
@@ -306,7 +307,6 @@ class JavadocRestCompiler(object):
                     cls_parts.append(part)
                 else:
                     package_parts.append(part)
-
 
             # If the import's final part wasn't capitalized,
             # append it to the class parts anyway so sphinx doesn't complain.

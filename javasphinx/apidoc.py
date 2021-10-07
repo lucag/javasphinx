@@ -16,10 +16,7 @@
 
 from __future__ import print_function, unicode_literals
 
-try:
-   import cPickle as pickle
-except:
-   import pickle
+from six.moves import cPickle as pickle
 
 import hashlib
 import logging
@@ -34,11 +31,13 @@ import javalang
 import javasphinx.compiler as compiler
 import javasphinx.util as util
 
+
 def encode_output(s):
-   if isinstance(s, str):
-      return s
-   else:
-      return s.encode('utf-8')
+    if isinstance(s, str):
+        return s
+    else:
+        return s.encode('utf-8')
+
 
 def find_source_files(input_path, excludes):
     """ Get a list of filenames for all Java source files within the given
@@ -61,6 +60,7 @@ def find_source_files(input_path, excludes):
 
     return java_files
 
+
 def write_toc(packages, opts):
     doc = util.Document()
     doc.add_heading(opts.toc_title, '=')
@@ -82,6 +82,7 @@ def write_toc(packages, opts):
     f = open(fullpath, 'w')
     f.write(encode_output(doc.build()))
     f.close()
+
 
 def write_documents(packages, documents, sources, opts):
     package_contents = dict()
@@ -124,7 +125,7 @@ def write_documents(packages, documents, sources, opts):
         doc = util.Document()
         doc.add_heading(package, '=')
 
-        #Adds the package documentation (if any)
+        # Adds the package documentation (if any)
         if packages[package] != '':
             documentation = packages[package]
             doc.add_line("\n%s" % documentation)
@@ -154,6 +155,7 @@ def write_documents(packages, documents, sources, opts):
         f.write(encode_output(doc.build()))
         f.close()
 
+
 def get_newer(a, b):
     if not os.path.exists(a):
         return b
@@ -169,6 +171,7 @@ def get_newer(a, b):
 
     return a
 
+
 def format_syntax_error(e):
     rest = ""
     if e.at.position:
@@ -176,6 +179,7 @@ def format_syntax_error(e):
         pos = e.at.position
         rest = ' at %s line %d, character %d' % (value, pos[0], pos[1])
     return e.description + rest
+
 
 def generate_from_source_file(doc_compiler, source_file, cache_dir):
     if cache_dir:
@@ -216,6 +220,7 @@ def generate_from_source_file(doc_compiler, source_file, cache_dir):
 
     return documents
 
+
 def generate_documents(source_files, cache_dir, verbose, member_headers, parser):
     documents = {}
     sources = {}
@@ -231,22 +236,23 @@ def generate_documents(source_files, cache_dir, verbose, member_headers, parser)
 
         documents.update(this_file_documents)
 
-    #Existing packages dict, where each key is a package name
-    #and each value is the package documentation (if any)
+    # Existing packages dict, where each key is a package name
+    # and each value is the package documentation (if any)
     packages = {}
 
-    #Gets the name of the package where the document was declared
-    #and adds it to the packages dict with no documentation.
-    #Package documentation, if any, will be collected from package-info.java files.
+    # Gets the name of the package where the document was declared
+    # and adds it to the packages dict with no documentation.
+    # Package documentation, if any, will be collected from package-info.java files.
     for package, name, _ in documents.values():
         packages[package] = ""
 
-    #Gets packages documentation from package-info.java documents (if any).
+    # Gets packages documentation from package-info.java documents (if any).
     for package, name, content in documents.values():
         if is_package_info_doc(name):
             packages[package] = content
 
     return packages, documents, sources
+
 
 def normalize_excludes(rootpath, excludes):
     f_excludes = []
@@ -255,6 +261,7 @@ def normalize_excludes(rootpath, excludes):
             exclude = os.path.join(rootpath, exclude)
         f_excludes.append(os.path.normpath(exclude) + os.path.sep)
     return f_excludes
+
 
 def is_excluded(root, excludes):
     sep = os.path.sep
@@ -265,12 +272,15 @@ def is_excluded(root, excludes):
             return True
     return False
 
+
 def is_package_info_doc(document_name):
     ''' Checks if the name of a document represents a package-info.java file. '''
     return document_name == 'package-info'
 
 
-def main(argv=sys.argv):
+def main(argv=None):
+    argv = argv if argv else sys.argv
+
     logging.basicConfig(level=logging.WARN)
 
     parser = OptionParser(

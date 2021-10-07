@@ -15,15 +15,21 @@
 #
 
 from __future__ import unicode_literals
-from builtins import str
 
 import collections
 import re
 
+# try:
+#     from builtins import str
+# except:
+#     pass # ignore, we are on Python 3
+
+from six import text_type
 from xml.sax.saxutils import escape as html_escape
 from bs4 import BeautifulSoup
 
 Cell = collections.namedtuple('Cell', ['type', 'rowspan', 'colspan', 'contents'])
+
 
 class Converter(object):
     def __init__(self, parser):
@@ -45,10 +51,10 @@ class Converter(object):
     # ---- reST Utility Methods ----
 
     def _unicode(self, s):
-        if isinstance(s, unicode):
+        if isinstance(s, text_type):
             return s
         else:
-            return unicode(s, 'utf8')
+            return text_type(s, 'utf8')
 
     def _separate(self, s):
         return u'\n\n' + s + u'\n\n'
@@ -196,7 +202,7 @@ class Converter(object):
                 line = []
                 j = 0
                 for c in row:
-                    w = sum(n + 3 for n in col_widths[j:j+c.colspan]) - 2
+                    w = sum(n + 3 for n in col_widths[j:j + c.colspan]) - 2
                     h = row_heights[i]
 
                     line.append('| ')
@@ -240,22 +246,22 @@ class Converter(object):
             return self._compress_whitespace(node)
 
         simple_tags = {
-            'b'      : lambda s: self._inline('**', s),
-            'strong' : lambda s: self._inline('**', s),
-            'i'      : lambda s: self._inline('*', s),
-            'em'     : lambda s: self._inline('*', s),
-            'tt'     : lambda s: self._inline('``', s),
-            'code'   : lambda s: self._inline('``', s),
-            'h1'     : lambda s: self._inline('**', s),
-            'h2'     : lambda s: self._inline('**', s),
-            'h3'     : lambda s: self._inline('**', s),
-            'h4'     : lambda s: self._inline('**', s),
-            'h5'     : lambda s: self._inline('**', s),
-            'h6'     : lambda s: self._inline('**', s),
-            'sub'    : lambda s: self._role('sub', s),
-            'sup'    : lambda s: self._role('sup', s),
-            'hr'     : lambda s: self._separate('') # Transitions not allowed
-            }
+            'b': lambda s: self._inline('**', s),
+            'strong': lambda s: self._inline('**', s),
+            'i': lambda s: self._inline('*', s),
+            'em': lambda s: self._inline('*', s),
+            'tt': lambda s: self._inline('``', s),
+            'code': lambda s: self._inline('``', s),
+            'h1': lambda s: self._inline('**', s),
+            'h2': lambda s: self._inline('**', s),
+            'h3': lambda s: self._inline('**', s),
+            'h4': lambda s: self._inline('**', s),
+            'h5': lambda s: self._inline('**', s),
+            'h6': lambda s: self._inline('**', s),
+            'sub': lambda s: self._role('sub', s),
+            'sup': lambda s: self._role('sup', s),
+            'hr': lambda s: self._separate('')  # Transitions not allowed
+        }
 
         if node.name in simple_tags:
             return simple_tags[node.name](self._process_text(node))
@@ -383,7 +389,8 @@ class Converter(object):
         s_html = self._preprocess_inline_javadoc_replace('code', to_tag('code'), s_html)
         s_html = self._preprocess_inline_javadoc_replace('literal', to_tag('span'), s_html)
         s_html = self._preprocess_inline_javadoc_replace('docRoot', lambda m: '', s_html)
-        s_html = self._preprocess_inline_javadoc_replace('linkplain', self._preprocess_replace_javadoc_link, s_html)
+        s_html = self._preprocess_inline_javadoc_replace('linkplain', self._preprocess_replace_javadoc_link,
+                                                         s_html)
         s_html = self._preprocess_inline_javadoc_replace('link', self._preprocess_replace_javadoc_link, s_html)
 
         # Make sure all anchor tags are closed

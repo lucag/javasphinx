@@ -19,6 +19,7 @@ import re
 from docutils import nodes, utils
 from sphinx.util.nodes import split_explicit_title
 
+
 def get_javadoc_ref(app, rawtext, text):
     javadoc_url_map = app.config.javadoc_url_map
 
@@ -100,6 +101,7 @@ def get_javadoc_ref(app, rawtext, text):
 
     return node
 
+
 def javadoc_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     """ Role for linking to external Javadoc """
 
@@ -117,7 +119,7 @@ def javadoc_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     ref = get_javadoc_ref(app, rawtext, target)
 
     if not ref:
-         raise ValueError("no Javadoc source found for %s in javadoc_url_map" % (target,))
+        raise ValueError("no Javadoc source found for %s in javadoc_url_map" % (target,))
 
     ref.append(nodes.Text(title, title))
 

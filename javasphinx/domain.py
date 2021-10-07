@@ -14,54 +14,44 @@
 # limitations under the License.
 #
 
-import re
-import string
-
+import javalang
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
-
 from sphinx import addnodes, version_info
-from sphinx.roles import XRefRole
-from sphinx.locale import l_, _
-from sphinx.domains import Domain, ObjType
 from sphinx.directives import ObjectDescription
-from sphinx.util.nodes import make_refnode
+from sphinx.domains import Domain, ObjType
+# from sphinx.locale import l_, _
+from sphinx.locale import _, __
+from sphinx.roles import XRefRole
 from sphinx.util.docfields import Field, TypedField, GroupedField
-
-import javalang
+from sphinx.util.nodes import make_refnode
 
 import javasphinx.extdoc as extdoc
 import javasphinx.formatter as formatter
-import javasphinx.util as util
 
 # Classes in java.lang. These are available without an import.
-java_dot_lang = set([
-    'AbstractMethodError', 'Appendable', 'ArithmeticException',
-    'ArrayIndexOutOfBoundsException', 'ArrayStoreException', 'AssertionError',
-    'AutoCloseable', 'Boolean', 'BootstrapMethodError', 'Byte', 'Character',
-    'CharSequence', 'Class', 'ClassCastException', 'ClassCircularityError',
-    'ClassFormatError', 'ClassLoader', 'ClassNotFoundException', 'ClassValue',
-    'Cloneable', 'CloneNotSupportedException', 'Comparable', 'Compiler',
-    'Deprecated', 'Double', 'Enum', 'EnumConstantNotPresentException', 'Error',
-    'Exception', 'ExceptionInInitializerError', 'Float', 'IllegalAccessError',
-    'IllegalAccessException', 'IllegalArgumentException',
-    'IllegalMonitorStateException', 'IllegalStateException',
-    'IllegalThreadStateException', 'IncompatibleClassChangeError',
-    'IndexOutOfBoundsException', 'InheritableThreadLocal', 'InstantiationError',
-    'InstantiationException', 'Integer', 'InternalError', 'InterruptedException',
-    'Iterable', 'LinkageError', 'Long', 'Math', 'NegativeArraySizeException',
-    'NoClassDefFoundError', 'NoSuchFieldError', 'NoSuchFieldException',
-    'NoSuchMethodError', 'NoSuchMethodException', 'NullPointerException', 'Number',
-    'NumberFormatException', 'Object', 'OutOfMemoryError', 'Override', 'Package',
-    'Process', 'ProcessBuilder', 'Readable', 'ReflectiveOperationException',
-    'Runnable', 'Runtime', 'RuntimeException', 'RuntimePermission', 'SafeVarargs',
-    'SecurityException', 'SecurityManager', 'Short', 'StackOverflowError',
-    'StackTraceElement', 'StrictMath', 'String', 'StringBuffer', 'StringBuilder',
-    'StringIndexOutOfBoundsException', 'SuppressWarnings', 'System', 'Thread',
-    'ThreadDeath', 'ThreadGroup', 'ThreadLocal', 'Throwable',
-    'TypeNotPresentException', 'UnknownError', 'UnsatisfiedLinkError',
-    'UnsupportedClassVersionError', 'UnsupportedOperationException', 'VerifyError',
-    'VirtualMachineError', 'Void'])
+java_dot_lang = {'AbstractMethodError', 'Appendable', 'ArithmeticException', 'ArrayIndexOutOfBoundsException',
+                 'ArrayStoreException', 'AssertionError', 'AutoCloseable', 'Boolean', 'BootstrapMethodError',
+                 'Byte', 'Character', 'CharSequence', 'Class', 'ClassCastException', 'ClassCircularityError',
+                 'ClassFormatError', 'ClassLoader', 'ClassNotFoundException', 'ClassValue', 'Cloneable',
+                 'CloneNotSupportedException', 'Comparable', 'Compiler', 'Deprecated', 'Double', 'Enum',
+                 'EnumConstantNotPresentException', 'Error', 'Exception', 'ExceptionInInitializerError',
+                 'Float', 'IllegalAccessError', 'IllegalAccessException', 'IllegalArgumentException',
+                 'IllegalMonitorStateException', 'IllegalStateException', 'IllegalThreadStateException',
+                 'IncompatibleClassChangeError', 'IndexOutOfBoundsException', 'InheritableThreadLocal',
+                 'InstantiationError', 'InstantiationException', 'Integer', 'InternalError',
+                 'InterruptedException', 'Iterable', 'LinkageError', 'Long', 'Math',
+                 'NegativeArraySizeException', 'NoClassDefFoundError', 'NoSuchFieldError',
+                 'NoSuchFieldException', 'NoSuchMethodError', 'NoSuchMethodException', 'NullPointerException',
+                 'Number', 'NumberFormatException', 'Object', 'OutOfMemoryError', 'Override', 'Package',
+                 'Process', 'ProcessBuilder', 'Readable', 'ReflectiveOperationException', 'Runnable', 'Runtime',
+                 'RuntimeException', 'RuntimePermission', 'SafeVarargs', 'SecurityException', 'SecurityManager',
+                 'Short', 'StackOverflowError', 'StackTraceElement', 'StrictMath', 'String', 'StringBuffer',
+                 'StringBuilder', 'StringIndexOutOfBoundsException', 'SuppressWarnings', 'System', 'Thread',
+                 'ThreadDeath', 'ThreadGroup', 'ThreadLocal', 'Throwable', 'TypeNotPresentException',
+                 'UnknownError', 'UnsatisfiedLinkError', 'UnsupportedClassVersionError',
+                 'UnsupportedOperationException', 'VerifyError', 'VirtualMachineError', 'Void'}
+
 
 class JavaObject(ObjectDescription):
     option_spec = {
@@ -71,7 +61,8 @@ class JavaObject(ObjectDescription):
     }
 
     def _build_ref_node(self, target):
-        ref = addnodes.pending_xref('', refdomain='java', reftype='type', reftarget=target, modname=None, classname=None)
+        ref = addnodes.pending_xref('', refdomain='java', reftype='type', reftarget=target, modname=None,
+                                    classname=None)
         ref['java:outertype'] = self.get_type()
 
         package = self.env.temp_data.get('java:imports', dict()).get(target, None)
@@ -200,14 +191,15 @@ class JavaObject(ObjectDescription):
         if self.set_type:
             self.env.temp_data['java:outertype'].pop()
 
+
 class JavaMethod(JavaObject):
     doc_field_types = [
-        TypedField('parameter', label=l_('Parameters'),
+        TypedField('parameter', label=__('Parameters'),
                    names=('param', 'parameter', 'arg', 'argument'),
                    typerolename='type', typenames=('type',)),
-        Field('returnvalue', label=l_('Returns'), has_arg=False,
+        Field('returnvalue', label=__('Returns'), has_arg=False,
               names=('returns', 'return')),
-        GroupedField('throws', names=('throws',), label=l_('Throws'), rolename='type')
+        GroupedField('throws', names=('throws',), label=__('Throws'), rolename='type')
     ]
 
     def handle_method_signature(self, sig, signode):
@@ -246,18 +238,20 @@ class JavaMethod(JavaObject):
             paramlist += param
         signode += paramlist
 
-        param_reprs = [formatter.output_type(param.type, with_generics=False).build() for param in member.parameters]
+        param_reprs = [formatter.output_type(param.type, with_generics=False).build() for param in
+                       member.parameters]
         return member.name + '(' + ', '.join(param_reprs) + ')'
 
     def get_index_text(self, package, type, name):
         return _('%s (Java method)' % (name,))
 
+
 class JavaConstructor(JavaObject):
     doc_field_types = [
-        TypedField('parameter', label=l_('Parameters'),
+        TypedField('parameter', label=__('Parameters'),
                    names=('param', 'parameter', 'arg', 'argument'),
                    typerolename='type', typenames=('type',)),
-        GroupedField('throws', names=('throws',), label=l_('Throws'))
+        GroupedField('throws', names=('throws',), label=__('Throws'))
     ]
 
     def handle_constructor_signature(self, sig, signode):
@@ -286,15 +280,17 @@ class JavaConstructor(JavaObject):
             paramlist += param
         signode += paramlist
 
-        param_reprs = [formatter.output_type(param.type, with_generics=False).build() for param in member.parameters]
+        param_reprs = [formatter.output_type(param.type, with_generics=False).build() for param in
+                       member.parameters]
         return '%s(%s)' % (member.name, ', '.join(param_reprs))
 
     def get_index_text(self, package, type, name):
         return _('%s (Java constructor)' % (name,))
 
+
 class JavaType(JavaObject):
     doc_field_types = [
-        GroupedField('parameter', names=('param',), label=l_('Parameters'))
+        GroupedField('parameter', names=('param',), label=__('Parameters'))
     ]
 
     declaration_type = None
@@ -359,6 +355,7 @@ class JavaType(JavaObject):
     def get_index_text(self, package, type, name):
         return _('%s (Java %s)' % (name, self.declaration_type))
 
+
 class JavaField(JavaObject):
     def handle_field_signature(self, sig, signode):
         try:
@@ -395,6 +392,7 @@ class JavaField(JavaObject):
     def get_index_text(self, package, type, name):
         return _('%s (Java field)' % (name,))
 
+
 class JavaPackage(Directive):
     """
     Directive to mark description of a new package.
@@ -430,6 +428,7 @@ class JavaPackage(Directive):
 
         return ret
 
+
 class JavaImport(Directive):
     """
     This directive is just to tell Sphinx the source of a referenced type.
@@ -447,6 +446,7 @@ class JavaImport(Directive):
 
         env.temp_data.setdefault('java:imports', dict())[typename] = package
         return []
+
 
 class JavaXRefRole(XRefRole):
     def process_link(self, env, refnode, has_explicit_title, title, target):
@@ -478,9 +478,10 @@ class JavaXRefRole(XRefRole):
                 title = title[1:]
                 dot = title.rfind('.')
                 if dot != -1:
-                    title = title[dot+1:]
+                    title = title[dot + 1:]
 
         return title, target
+
 
 class JavaDomain(Domain):
     """Java language domain."""
@@ -488,29 +489,29 @@ class JavaDomain(Domain):
     label = 'Java'
 
     object_types = {
-        'package':     ObjType(l_('package'), 'package', 'ref'),
-        'type':        ObjType(l_('type'), 'type', 'ref'),
-        'field':       ObjType(l_('field'), 'field', 'ref'),
-        'constructor': ObjType(l_('constructor'), 'construct', 'ref'),
-        'method':      ObjType(l_('method'), 'meth', 'ref')
+        'package': ObjType(__('package'), 'package', 'ref'),
+        'type': ObjType(__('type'), 'type', 'ref'),
+        'field': ObjType(__('field'), 'field', 'ref'),
+        'constructor': ObjType(__('constructor'), 'construct', 'ref'),
+        'method': ObjType(__('method'), 'meth', 'ref')
     }
 
     directives = {
-        'package':        JavaPackage,
-        'type':           JavaType,
-        'field':          JavaField,
-        'constructor':    JavaConstructor,
-        'method':         JavaMethod,
-        'import':         JavaImport
+        'package': JavaPackage,
+        'type': JavaType,
+        'field': JavaField,
+        'constructor': JavaConstructor,
+        'method': JavaMethod,
+        'import': JavaImport
     }
 
     roles = {
-        'package':   JavaXRefRole(),
-        'type':      JavaXRefRole(),
-        'field':     JavaXRefRole(),
+        'package': JavaXRefRole(),
+        'type': JavaXRefRole(),
+        'field': JavaXRefRole(),
         'construct': JavaXRefRole(),
-        'meth':      JavaXRefRole(),
-        'ref':       JavaXRefRole(),
+        'meth': JavaXRefRole(),
+        'ref': JavaXRefRole(),
     }
 
     initial_data = {
@@ -531,7 +532,8 @@ class JavaDomain(Domain):
         type_context = node.get('java:outertype')
 
         # Partial function to make building the response easier
-        make_ref = lambda fullname: make_refnode(builder, fromdocname, objects[fullname][0], fullname, contnode, fullname)
+        make_ref = lambda fullname: make_refnode(builder, fromdocname, objects[fullname][0], fullname, contnode,
+                                                 fullname)
 
         # Check for fully qualified references
         if target in objects:

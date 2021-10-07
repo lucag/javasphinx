@@ -15,11 +15,12 @@
 #
 
 from __future__ import unicode_literals
-from builtins import str
 
 import logging
 import re
 import sys
+# from builtins import str
+
 
 class StringBuilder(list):
     def build(self):
@@ -27,6 +28,7 @@ class StringBuilder(list):
 
     def __str__(self):
         return ''.join(self)
+
 
 class Directive(object):
 
@@ -62,6 +64,7 @@ class Directive(object):
         doc.clear()
 
         return doc.build()
+
 
 class Document(object):
     remove_trailing_whitespace_re = re.compile('[ \t]+$', re.MULTILINE)
@@ -110,9 +113,11 @@ class Document(object):
 
         return output
 
+
 def error(s, *args, **kwargs):
     logging.error(s, *args, **kwargs)
     sys.exit(1)
+
 
 def unexpected(s, *args, **kwargs):
     logging.exception(s, *args, **kwargs)
